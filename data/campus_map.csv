@@ -1,0 +1,60 @@
+LOCATIONS
+id,name,type,description,emergency
+1,Main Gate,Entry,Main entrance of COMSATS University Islamabad,no
+2,Admin Block,Administration,Administrative offices and registrar,no
+3,CS Department,Academic,Computer Science department building,no
+4,EE Department,Academic,Electrical Engineering department building,no
+5,ME Department,Academic,Mechanical Engineering department building,no
+6,Civil Department,Academic,Civil Engineering department building,no
+7,Library,Facility,Central library and research center,no
+8,Main Cafeteria,Food,Main cafeteria and food court,no
+9,CS Cafe,Food,Small cafe near CS department,no
+10,Main Parking,Parking,Main student and faculty parking lot,no
+11,Faculty Parking,Parking,Reserved faculty parking area,no
+12,Boys Hostel A,Hostel,Boys hostel block A,no
+13,Boys Hostel B,Hostel,Boys hostel block B,no
+14,Girls Hostel,Hostel,Girls hostel building,no
+15,Sports Ground,Sports,Cricket ground and football field,no
+16,Medical Center,Medical,University medical and health center,yes
+17,Mosque,Religious,University mosque,no
+18,Auditorium,Event,Main auditorium and conference hall,no
+19,Student Center,Social,Student activity and recreation center,no
+20,Bus Stop,Transport,University bus stop and transport hub,no
+EDGES
+from_id,to_id,distance,time,bidirectional
+1,2,150,2,yes
+1,10,100,1,yes
+1,20,50,1,yes
+1,14,300,4,yes
+2,3,200,3,yes
+2,4,180,2,yes
+2,7,120,2,yes
+2,18,160,2,yes
+2,11,130,2,yes
+2,16,180,2,yes
+3,4,100,1,yes
+3,9,80,1,yes
+3,17,150,2,yes
+3,7,250,3,yes
+4,5,150,2,yes
+4,18,200,3,yes
+5,6,120,2,yes
+5,13,250,3,yes
+6,13,300,4,yes
+7,19,100,1,yes
+7,17,80,1,yes
+8,19,60,1,yes
+8,18,100,1,yes
+9,8,200,3,yes
+10,2,120,2,yes
+10,20,80,1,yes
+12,15,150,2,yes
+12,13,80,1,yes
+13,14,200,3,yes
+15,19,200,3,yes
+15,16,200,3,yes
+16,12,250,3,yes
+17,8,100,1,yes
+18,19,80,1,yes
+19,20,150,2,yes
+11,4,100,1,yes
