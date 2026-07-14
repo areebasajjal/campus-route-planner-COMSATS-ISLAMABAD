@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Route Planner – COMSATS Islamabad</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#fdf6ec; --warm:#f5e6cc; --sand:#e8d5b0; --caramel:#c8973a;
+  --amber:#d4761e; --rust:#b85c20; --bark:#7a3e1a; --espresso:#3d1f0a;
+  --teal:#2a7a6a; --sage:#5a8a6a; --rose:#c05060; --sky:#3a7aaa;
+  --gold:#e8b840; --shadow:rgba(61,31,10,0.13);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--espresso); }
+
+
+header {
+  background:linear-gradient(135deg,var(--espresso),var(--bark) 55%,var(--rust));
+  padding:18px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 4px 20px rgba(61,31,10,0.35);
+  position:relative; overflow:hidden;
+}
+header::before {
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,0.025) 20px,rgba(255,255,255,0.025) 40px);
+  pointer-events:none;
+}
+.header-left h1 { font-family:'Playfair Display',serif; font-size:22px; color:var(--gold); }
+.header-left p  { color:var(--sand); font-size:11px; margin-top:3px; letter-spacing:1.2px; text-transform:uppercase; }
+.header-badges  { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.badge { background:rgba(255,255,255,0.11); border:1px solid rgba(255,255,255,0.18); color:var(--warm); font-size:10.5px; padding:3px 10px; border-radius:20px; }
+
+
+.page { max-width:900px; margin:0 auto; padding:20px 16px 40px; display:flex; flex-direction:column; gap:16px; }
+
+
+.controls-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+  gap:14px;
+}
+
+
+.card { background:white; border:1.5px solid var(--sand); border-radius:14px; padding:16px; box-shadow:0 2px 10px var(--shadow); }
+.card-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.card-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:white; flex-shrink:0; }
+.card-header h3 { font-family:'Playfair Display',serif; font-size:14px; color:var(--bark); line-height:1.2; }
+.card-header p  { font-size:11px; color:var(--caramel); margin-top:2px; }
+
+label { font-size:11px; font-weight:600; color:var(--bark); display:block; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.7px; }
+select, input[type=text] {
+  width:100%; padding:8px 11px; border:1.5px solid var(--sand); border-radius:8px;
+  background:var(--cream); font-family:'DM Sans',sans-serif; font-size:13px; color:var(--espresso);
+  margin-bottom:8px; appearance:none; cursor:pointer; transition:border-color .2s,box-shadow .2s;
+}
+select:focus, input[type=text]:focus { outline:none; border-color:var(--caramel); box-shadow:0 0 0 3px rgba(200,151,58,.16); }
+
+.btn {
+  display:flex; align-items:center; justify-content:center;
+  padding:9px 14px; border-radius:9px; border:none;
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .2s; width:100%; margin-top:5px;
+}
+.btn:active { transform:scale(.97); }
+.btn-primary   { background:var(--amber); color:white; }
+.btn-primary:hover   { background:var(--rust); }
+.btn-teal      { background:var(--teal); color:white; }
+.btn-teal:hover      { background:#1f6058; }
+.btn-rose      { background:var(--rose); color:white; }
+.btn-rose:hover      { background:#a03050; }
+.btn-sky       { background:var(--sky); color:white; }
+.btn-sky:hover       { background:#2a5a8a; }
+.btn-bark      { background:var(--bark); color:white; }
+.btn-bark:hover      { background:var(--espresso); }
+.btn-sage      { background:var(--sage); color:white; }
+.btn-sage:hover      { background:#3a6a4a; }
+.btn-gold      { background:var(--gold); color:var(--espresso); }
+.btn-gold:hover      { background:#d0a030; }
+.btn-terracota { background:#c0522a; color:white; }
+.btn-terracota:hover { background:#a04020; }
+.btn-outline   { background:transparent; color:var(--rust); border:1.5px solid var(--rust); }
+.btn-outline:hover   { background:var(--rust); color:white; }
+.btn-sm { padding:6px 12px; font-size:12px; width:auto; margin-top:0; }
+
+
+.map-section { background:white; border:1.5px solid var(--sand); border-radius:14px; overflow:hidden; box-shadow:0 2px 10px var(--shadow); }
+.map-section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; background:var(--warm); border-bottom:1.5px solid var(--sand);
+}
+.map-section-header h2 { font-family:'Playfair Display',serif; font-size:16px; color:var(--bark); }
+.map-section-header p  { font-size:11.5px; color:var(--caramel); margin-top:2px; }
+
+canvas#graphCanvas { width:100%; height:480px; display:block; cursor:grab; background:var(--warm); }
+canvas#graphCanvas:active { cursor:grabbing; }
+
+.map-legend {
+  display:flex; flex-wrap:wrap; gap:12px; padding:12px 18px;
+  border-top:1.5px solid var(--sand); background:var(--cream);
+}
+.legend-item { display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--bark); }
+.legend-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.legend-hint { font-size:11px; color:var(--caramel); margin-left:auto; font-style:italic; white-space:nowrap; }
+
+
+.tabs-section { background:white; border:1.5px solid var(--sand); border-radius:14px; overflow:hidden; box-shadow:0 2px 10px var(--shadow); }
+.tab-bar { background:var(--espresso); display:flex; overflow-x:auto; }
+.tab-bar::-webkit-scrollbar { height:3px; }
+.tab-bar::-webkit-scrollbar-thumb { background:var(--caramel); }
+.tab { padding:11px 16px; font-size:12px; font-weight:600; color:var(--sand); cursor:pointer; transition:all .2s; white-space:nowrap; border-bottom:3px solid transparent; }
+.tab:hover  { color:var(--gold); }
+.tab.active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(255,255,255,0.06); }
+
+.tab-content { display:none; padding:20px; min-height:200px; }
+.tab-content.active { display:block; }
+
+
+.placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; gap:8px; text-align:center; }
+.placeholder .ph-icon { font-size:36px; color:var(--sand); font-family:'Playfair Display',serif; }
+.placeholder p { font-size:14px; color:var(--bark); opacity:.5; font-weight:500; }
+.placeholder span { font-size:12px; color:var(--caramel); opacity:.7; }
+
+
+.result-box { background:var(--cream); border:1.5px solid var(--sand); border-radius:12px; padding:18px; animation:slideIn .3s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.result-box h3 { font-family:'Playfair Display',serif; font-size:15px; color:var(--rust); margin-bottom:13px; }
+.path-step { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px dashed var(--sand); font-size:13px; }
+.path-step:last-child { border-bottom:none; }
+.step-num  { width:22px; height:22px; background:var(--amber); color:white; border-radius:50%; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.step-num.emerg { background:var(--rose); }
+.step-meta { font-size:11px; color:var(--caramel); margin-left:4px; }
+.path-meta { display:flex; gap:10px; margin-top:14px; padding-top:14px; border-top:2px solid var(--sand); flex-wrap:wrap; }
+.meta-chip { background:white; border:1.5px solid var(--sand); border-radius:8px; padding:7px 14px; font-size:13px; font-weight:600; color:var(--bark); text-align:center; }
+.meta-chip span { display:block; font-size:10px; font-weight:400; color:var(--amber); margin-bottom:2px; }
+
+
+.loc-toolbar { display:flex; gap:8px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
+.loc-toolbar h3 { font-family:'Playfair Display',serif; font-size:14px; color:var(--rust); }
+.loc-card { background:var(--cream); border:1.5px solid var(--sand); border-radius:10px; padding:12px 14px; margin-bottom:8px; display:flex; gap:12px; align-items:flex-start; transition:border-color .2s,box-shadow .2s; }
+.loc-card:hover { border-color:var(--caramel); box-shadow:0 2px 10px var(--shadow); }
+.loc-icon  { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:white; flex-shrink:0; }
+.loc-info  { flex:1; }
+.loc-info h4 { font-size:13.5px; font-weight:600; color:var(--espresso); }
+.type-tag  { font-size:10.5px; background:var(--warm); color:var(--rust); border-radius:4px; padding:2px 7px; display:inline-block; margin:3px 0; font-weight:600; }
+.emerg-badge { background:var(--rose); color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px; }
+.loc-info p { font-size:12px; color:var(--bark); }
+.loc-actions { display:flex; gap:6px; flex-shrink:0; align-items:flex-start; }
+
+
+.visit-step { display:flex; align-items:center; gap:10px; padding:9px 12px; background:var(--cream); border:1.5px solid var(--sand); border-radius:8px; margin-bottom:6px; animation:slideIn .3s ease; animation-fill-mode:both; }
+.visit-num  { width:26px; height:26px; border-radius:7px; color:white; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.visit-info strong { font-size:13px; }
+.visit-info small  { font-size:11px; color:var(--caramel); display:block; }
+
+
+.route-block { background:var(--cream); border:1.5px solid var(--sand); border-radius:12px; padding:16px; margin-bottom:10px; animation:slideIn .3s ease; }
+.route-block h4 { font-family:'Playfair Display',serif; color:var(--bark); font-size:13.5px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.route-tag  { display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:700; color:white; }
+.path-pills { margin-top:8px; line-height:2.3; }
+.path-pill  { display:inline-block; background:white; border:1px solid var(--sand); border-radius:20px; padding:3px 11px; font-size:12px; color:var(--bark); margin:2px; }
+.path-sep   { color:var(--caramel); font-weight:700; margin:0 2px; }
+
+
+.blocked-item { background:var(--cream); border:1.5px solid #f0c0b0; border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:10px; margin-bottom:6px; animation:slideIn .3s ease; }
+.blocked-dot  { width:9px; height:9px; background:var(--rose); border-radius:50%; flex-shrink:0; }
+.blocked-info { flex:1; font-size:13px; font-weight:500; }
+.blocked-meta { font-size:11px; color:var(--amber); margin-top:2px; }
+
+
+.modal-overlay { position:fixed; inset:0; background:rgba(61,31,10,.55); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; pointer-events:none; transition:opacity .25s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal { background:var(--cream); border-radius:16px; padding:26px; width:420px; max-width:92vw; box-shadow:0 20px 60px rgba(61,31,10,.4); transform:scale(.95); transition:transform .25s; }
+.modal-overlay.open .modal { transform:scale(1); }
+.modal h2 { font-family:'Playfair Display',serif; color:var(--bark); margin-bottom:18px; font-size:18px; }
+.form-row { margin-bottom:12px; }
+.form-row label { margin-bottom:4px; }
+.modal-actions { display:flex; gap:10px; margin-top:18px; }
+.modal-actions .btn { flex:1; }
+.checkbox-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--bark); cursor:pointer; font-weight:400; text-transform:none; letter-spacing:0; }
+input[type=checkbox] { width:15px; height:15px; accent-color:var(--amber); cursor:pointer; }
+
+
+.toast { position:fixed; bottom:20px; right:20px; background:var(--espresso); color:var(--cream); padding:11px 18px; border-radius:10px; font-size:13px; font-weight:500; box-shadow:0 8px 24px rgba(61,31,10,.4); z-index:9999; opacity:0; transform:translateY(12px); transition:all .3s; max-width:300px; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.success { border-left:4px solid var(--teal); }
+.toast.error   { border-left:4px solid var(--rose); }
+.toast.info    { border-left:4px solid var(--caramel); }
+
+
+.connect-btn-wrap { text-align:center; margin-top:4px; }
+.connect-btn-wrap button { background:var(--bark); color:white; padding:10px 24px; border-radius:24px; border:none; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 4px 14px rgba(61,31,10,.3); transition:background .2s; }
+.connect-btn-wrap button:hover { background:var(--espresso); }
+
+@media(max-width:500px) {
+  header { flex-direction:column; gap:10px; text-align:center; }
+  .header-badges { justify-content:center; }
+  .controls-grid { grid-template-columns:1fr; }
+  canvas#graphCanvas { height:320px; }
+}
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="header-left">
+    <h1>Campus Route Planner</h1>
+    <p>COMSATS University Islamabad &middot; Smart Navigation</p>
+  </div>
+  <div class="header-badges">
+    <span class="badge">Shortest Path</span>
+    <span class="badge">Emergency Access</span>
+    <span class="badge">Manage Locations</span>
+  </div>
+</header>
+
+<div class="page">
+
+
+  <div class="controls-grid">
+
+    <!-- Find Shortest Path -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--amber)">A→B</div>
+        <div><h3>Find Shortest Path</h3><p>Get the quickest route between two places</p></div>
+      </div>
+      <label>Starting Point</label>
+      <select id="sp-from"></select>
+      <label>Destination</label>
+      <select id="sp-to"></select>
+      <button class="btn btn-primary" onclick="runDijkstra()">Find Shortest Path</button>
+      <button class="btn btn-gold" onclick="showAlternateRoutes()">Show Other Route Options</button>
+    </div>
+
+    <!-- Explore Campus -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--teal)">MAP</div>
+        <div><h3>Explore Campus</h3><p>See all reachable locations from a starting point</p></div>
+      </div>
+      <label>Starting Location</label>
+      <select id="trav-from"></select>
+      <button class="btn btn-teal" onclick="runBFS()">Explore Nearest Locations First</button>
+      <button class="btn btn-sky" onclick="runDFS()">Explore In-Depth First</button>
+    </div>
+
+    <!-- Emergency -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--rose)">SOS</div>
+        <div><h3>Emergency Route</h3><p>Find the nearest medical center fast</p></div>
+      </div>
+      <label>Your Current Location</label>
+      <select id="emerg-from"></select>
+      <button class="btn btn-rose" onclick="runEmergency()">Get Emergency Route</button>
+    </div>
+
+    <!-- Check Reachable -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--bark)">CHK</div>
+        <div><h3>Check if Reachable</h3><p>Is there an open route between two places?</p></div>
+      </div>
+      <label>From</label>
+      <select id="conn-from"></select>
+      <label>To</label>
+      <select id="conn-to"></select>
+      <button class="btn btn-bark" onclick="checkConnectivity()">Check Route Availability</button>
+    </div>
+
+    <!-- Road Closures -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#c0522a">RD</div>
+        <div><h3>Road Closures</h3><p>Mark or reopen paths on campus</p></div>
+      </div>
+      <label>From</label>
+      <select id="block-from"></select>
+      <label>To</label>
+      <select id="block-to"></select>
+      <button class="btn btn-terracota" onclick="blockPath()">Mark as Closed</button>
+      <button class="btn btn-sage" onclick="unblockPath()">Mark as Open</button>
+    </div>
+
+  </div><!-- end controls-grid -->
+
+  <!-- ── CAMPUS MAP ── -->
+  <div class="map-section">
+    <div class="map-section-header">
+      <div>
+        <h2>Campus Map</h2>
+        <p>Scroll to zoom &middot; Drag to pan &middot; Orange line = active route</p>
+      </div>
+    </div>
+    <canvas id="graphCanvas"></canvas>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#3a7aaa"></div>Academic</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#5a8a6a"></div>Facility</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c8973a"></div>Food</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7a3e1a"></div>Gate / Transport</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c05060"></div>Medical</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8a6aaa"></div>Hostel</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6aaa8a"></div>Sports / Social</div>
+    </div>
+  </div>
+
+  <!-- ── TABS (results, locations, wagera) ── -->
+  <div class="tabs-section">
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('results')">Route Results</div>
+      <div class="tab" onclick="switchTab('locations')">All Locations</div>
+      <div class="tab" onclick="switchTab('routes')">Alternate Routes</div>
+      <div class="tab" onclick="switchTab('walkthrough')">Campus Walkthrough</div>
+      <div class="tab" onclick="switchTab('blocked')">Road Closures</div>
+    </div>
+
+    <!-- Route Results -->
+    <div class="tab-content active" id="tab-results">
+      <div class="placeholder" id="results-ph">
+        <div class="ph-icon">&#8594;</div>
+        <p>No results yet</p>
+        <span>Use the controls above to find a route</span>
+      </div>
+      <div id="results-content"></div>
+    </div>
+
+    <!-- All Locations -->
+    <div class="tab-content" id="tab-locations">
+      <div class="loc-toolbar">
+        <h3>All Locations</h3>
+        <div style="flex:1"></div>
+        <input type="text" id="search-input" placeholder="Search..." style="width:180px;margin:0;" oninput="filterLocations()">
+      </div>
+      <div id="loc-list"></div>
+    </div>
+
+    <!-- Alternate Routes -->
+    <div class="tab-content" id="tab-routes">
+      <div class="placeholder" id="routes-ph">
+        <div class="ph-icon">&#8646;</div>
+        <p>No alternate routes yet</p>
+        <span>Click "Show Other Route Options" above</span>
+      </div>
+      <div id="routes-content"></div>
+    </div>
+
+    <!-- Campus Walkthrough -->
+    <div class="tab-content" id="tab-walkthrough">
+      <div class="placeholder" id="trav-ph">
+        <div class="ph-icon">&#9702;</div>
+        <p>No walkthrough yet</p>
+        <span>Use "Explore Campus" above to see all reachable locations in order</span>
+      </div>
+      <div id="trav-content"></div>
+    </div>
+
+    <!-- Road Closures -->
+    <div class="tab-content" id="tab-blocked">
+      <div class="placeholder" id="blocked-ph">
+        <div class="ph-icon">&#10003;</div>
+        <p>All paths are open</p>
+        <span>No road closures at the moment</span>
+      </div>
+      <div id="blocked-list"></div>
+    </div>
+
+  </div><!-- end tabs-section -->
+
+  <!-- Connect two locations button -->
+  <div class="connect-btn-wrap">
+    <button onclick="openEdgeModal()">+ Connect Two Locations</button>
+  </div>
+
+</div><!-- end page -->
+
+<!-- MODAL: Location -->
+<div class="modal-overlay" id="loc-modal">
+  <div class="modal">
+    <h2 id="modal-title">Add New Location</h2>
+    <div class="form-row"><label>Location Name</label><input type="text" id="m-name" placeholder="e.g. New Lecture Hall"></div>
+    <div class="form-row"><label>Category</label>
+      <select id="m-type">
+        <option>Academic</option><option>Administration</option><option>Facility</option>
+        <option>Food</option><option>Parking</option><option>Hostel</option>
+        <option>Sports</option><option>Medical</option><option>Religious</option>
+        <option>Event</option><option>Social</option><option>Transport</option><option>Entry</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Description</label><input type="text" id="m-desc" placeholder="Short description..."></div>
+    <div class="form-row"><label class="checkbox-row"><input type="checkbox" id="m-emergency"> This is a medical / emergency point</label></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('loc-modal')">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveLocation()">Save Location</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Path -->
+<div class="modal-overlay" id="edge-modal">
+  <div class="modal">
+    <h2>Add a New Path</h2>
+    <div class="form-row"><label>From</label><select id="e-from"></select></div>
+    <div class="form-row"><label>To</label><select id="e-to"></select></div>
+    <div class="form-row"><label>Distance (metres)</label><input type="text" id="e-dist" placeholder="e.g. 200"></div>
+    <div class="form-row"><label>Walking Time (minutes)</label><input type="text" id="e-time" placeholder="e.g. 3"></div>
+    <div class="form-row"><label class="checkbox-row"><input type="checkbox" id="e-bidir" checked> Works in both directions</label></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('edge-modal')">Cancel</button>
+      <button class="btn btn-teal" onclick="saveEdge()">Save Path</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+//  Browser  →  fetch()  →  Python Flask  →  C++ binary
+
+
+const API = 'http://localhost:5000/api';
+
+// locations loaded from C++ at startup
+let LOCATIONS = [];
+let EDGES     = [];       // loaded from C++ graph endpoint for the map
+let blockedPairs = [];    // track which pairs are blocked in this session
+
+let editingId=null, highlightPath=[], highlightType='shortest';
+
+// helpers 
+const loc     = id => LOCATIONS.find(l=>l.id===id);
+const locName = id => { const l=loc(id); return l?l.name:'?'; };
+
+function typeColor(t){
+  return {Academic:'#3a7aaa',Administration:'#6a5090',Facility:'#5a8a6a',Food:'#c8973a',
+    Parking:'#8a7060',Hostel:'#8a6aaa',Sports:'#6aaa8a',Medical:'#c05060',
+    Religious:'#aa8a40',Event:'#c07040',Social:'#5a90aa',Transport:'#7a3e1a',Entry:'#7a3e1a'}[t]||'#888';
+}
+
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function setLoading(id, on){
+  const el=document.getElementById(id);
+  if(el) el.style.opacity = on ? '0.5' : '1';
+}
+
+// ── API call wrapper 
+async function api(path, method='GET'){
+  try {
+    const res = await fetch(API + path, {method});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch(e) {
+    showToast('Cannot reach server. Is server.py running?','error');
+    console.error(e);
+    return null;
+  }
+}
+
+// Load all data from C++ on startup 
+async function loadData(){
+  showToast('Connecting to C++ backend...','info');
+
+  // 1. load locations
+  const locData = await api('/locations');
+  if(!locData || !locData.locations){ showToast('Failed to load locations from C++','error'); return; }
+  LOCATIONS = locData.locations.map(l=>({
+    id: l.id, name: l.name, type: l.type,
+    desc: l.description, emergency: l.emergency
+  }));
+
+  // 2. load graph edges for the map
+  const gData = await api('/graph');
+  if(gData && gData.adjacency){
+    const edgeSet = new Set();
+    EDGES = [];
+    for(const node of gData.adjacency){
+      for(const e of node.edges){
+        const key = Math.min(node.id,e.to)+'-'+Math.max(node.id,e.to);
+        if(!edgeSet.has(key)){
+          edgeSet.add(key);
+          EDGES.push({from:node.id, to:e.to, dist:e.distance, time:e.time, blocked:e.blocked});
+        }
+      }
+    }
+  }
+
+  populateSelects();
+  renderLocList();
+  drawGraph();
+  showToast(`Loaded ${LOCATIONS.length} locations from C++ backend`,'success');
+}
+
+function findEdge(a,b){ return EDGES.find(e=>(e.from===a&&e.to===b)||(e.from===b&&e.to===a)); }
+
+// ── RUNNERS 
+
+async function runDijkstra(){
+  const src=+document.getElementById('sp-from').value;
+  const dst=+document.getElementById('sp-to').value;
+  if(src===dst){showToast('Please choose two different locations.','error');return;}
+  showToast('Calling C++ Dijkstra algorithm...','info');
+  const res = await api(`/shortest/${src}/${dst}`);
+  if(!res) return;
+
+  if(res.reachable){
+    highlightPath = res.path.map(p=>p.id);
+  } else {
+    highlightPath = [];
+  }
+  highlightType='shortest'; drawGraph();
+
+  // show results
+  document.getElementById('results-ph').style.display='none';
+  const ct=document.getElementById('results-content');
+  if(!res.reachable){
+    ct.innerHTML=`<div class="result-box"><h3>No Route Found</h3>
+      <p style="font-size:13px;color:var(--rose);margin-top:6px;">No open route between <b>${locName(src)}</b> and <b>${locName(dst)}</b>.</p>
+      <p style="font-size:11px;color:var(--caramel);margin-top:8px;">Result from C++ Dijkstra algorithm</p></div>`;
+  } else {
+    const steps = res.path.map((p,i)=>{
+      const next = res.path[i+1];
+      const e = next ? findEdge(p.id, next.id) : null;
+      const meta = e ? `<span class="step-meta">${e.dist}m · ${e.time} min</span>` : '';
+      return `<div class="path-step"><span class="step-num">${i+1}</span><span>${p.name}${meta}</span></div>`;
+    }).join('');
+    ct.innerHTML=`<div class="result-box">
+      <h3>Shortest Route: ${locName(src)} to ${locName(dst)}</h3>
+      <p style="font-size:11px;color:var(--teal);margin-bottom:12px;">Computed by C++ Dijkstra using Priority Queue</p>
+      ${steps}
+      <div class="path-meta">
+        <div class="meta-chip"><span>Total Distance</span>${res.distance} m</div>
+        <div class="meta-chip"><span>Walking Time</span>~${res.time} min</div>
+        <div class="meta-chip"><span>Stops</span>${res.path.length}</div>
+      </div></div>`;
+  }
+  switchTab('results');
+  showToast(res.reachable?`Path found: ${res.distance}m, ~${res.time} min`:'No open route.', res.reachable?'success':'error');
+}
+
+async function runBFS(){
+  const src=+document.getElementById('trav-from').value;
+  showToast('Calling C++ BFS algorithm...','info');
+  const res = await api(`/bfs/${src}`);
+  if(!res) return;
+  renderWalkthrough('Nearest-First Walkthrough (BFS)', src, res.order, '#2a7a6a', 'C++ BFS using Queue');
+  switchTab('walkthrough');
+  showToast(`BFS visited ${res.order.length} locations from ${locName(src)}`,'success');
+}
+
+async function runDFS(){
+  const src=+document.getElementById('trav-from').value;
+  showToast('Calling C++ DFS algorithm...','info');
+  const res = await api(`/dfs/${src}`);
+  if(!res) return;
+  renderWalkthrough('In-Depth Walkthrough (DFS)', src, res.order, '#3a7aaa', 'C++ DFS using Stack');
+  switchTab('walkthrough');
+  showToast(`DFS visited ${res.order.length} locations from ${locName(src)}`,'success');
+}
+
+function renderWalkthrough(title, src, order, color, subtitle){
+  document.getElementById('trav-ph').style.display='none';
+  document.getElementById('trav-content').innerHTML=`
+    <div style="margin-bottom:14px;">
+      <h3 style="font-family:'Playfair Display',serif;color:var(--bark);font-size:15px;">${title}</h3>
+      <p style="font-size:11px;color:var(--teal);margin-top:3px;">${subtitle}</p>
+      <p style="font-size:12px;color:var(--caramel);margin-top:4px;">${order.length} locations visited in order from ${locName(src)}</p>
+    </div>
+    ${order.map((p,i)=>`<div class="visit-step" style="animation-delay:${i*.03}s">
+      <div class="visit-num" style="background:${color}">${i+1}</div>
+      <div class="visit-info">
+        <strong>${p.name}</strong>
+        <small>${loc(p.id)?.type||''}</small>
+      </div>
+    </div>`).join('')}`;
+}
+
+async function runEmergency(){
+  const src=+document.getElementById('emerg-from').value;
+  showToast('Calling C++ Emergency BFS...','info');
+  const res = await api(`/emergency/${src}`);
+  if(!res) return;
+
+  if(res.found){
+    highlightPath = res.path.map(p=>p.id);
+  } else {
+    highlightPath = [];
+  }
+  highlightType='emergency'; drawGraph();
+
+  document.getElementById('results-ph').style.display='none';
+  const ct=document.getElementById('results-content');
+  if(!res.found){
+    ct.innerHTML=`<div class="result-box"><h3>No Emergency Route Found</h3>
+      <p style="font-size:13px;color:var(--rose);margin-top:6px;">No reachable medical center from <b>${locName(src)}</b>.</p></div>`;
+  } else {
+    const steps=res.path.map((p,i)=>`<div class="path-step"><span class="step-num emerg">${i+1}</span><span>${p.name}</span></div>`).join('');
+    ct.innerHTML=`<div class="result-box" style="border-color:#f0b0b0;">
+      <h3 style="color:var(--rose)">Emergency Route to ${res.emergency}</h3>
+      <p style="font-size:11px;color:var(--teal);margin-bottom:12px;">Computed by C++ BFS (nearest emergency point)</p>
+      ${steps}
+      <div class="path-meta">
+        <div class="meta-chip"><span>Stops</span>${res.path.length}</div>
+      </div></div>`;
+  }
+  switchTab('results');
+  showToast(res.found?`Nearest medical: ${res.emergency}`:'No emergency point reachable!', res.found?'success':'error');
+}
+
+async function showAlternateRoutes(){
+  const src=+document.getElementById('sp-from').value;
+  const dst=+document.getElementById('sp-to').value;
+  if(src===dst){showToast('Please choose two different locations.','error');return;}
+  showToast('Calling C++ for 3 alternate routes...','info');
+  const res = await api(`/routes/${src}/${dst}`);
+  if(!res) return;
+
+  document.getElementById('routes-ph').style.display='none';
+  const ct=document.getElementById('routes-content');
+  if(!res.routes||!res.routes.length){showToast('No routes available.','error');return;}
+
+  const colors=['#d4761e','#2a7a6a','#3a7aaa'];
+  ct.innerHTML=`<p style="font-size:11px;color:var(--teal);margin-bottom:14px;">Routes computed by C++ Dijkstra (blocking alternate edges each time)</p>`
+  + res.routes.map((r,i)=>`<div class="route-block">
+    <h4><span class="route-tag" style="background:${colors[i]||'#888'}">${r.label}</span></h4>
+    <div class="path-pills">${r.path.map((p,j)=>`<span class="path-pill">${p.name}</span>${j<r.path.length-1?'<span class="path-sep">&#8594;</span>':''}`).join('')}</div>
+    <div class="path-meta" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--sand);">
+      <div class="meta-chip"><span>Distance</span>${r.distance} m</div>
+      <div class="meta-chip"><span>Walking Time</span>~${r.time} min</div>
+      <div class="meta-chip"><span>Stops</span>${r.path.length}</div>
+    </div></div>`).join('');
+  switchTab('routes');
+  showToast(`Found ${res.routes.length} routes from C++ backend`,'success');
+}
+
+async function checkConnectivity(){
+  const src=+document.getElementById('conn-from').value;
+  const dst=+document.getElementById('conn-to').value;
+  showToast('Calling C++ connectivity check...','info');
+  const res = await api(`/connectivity/${src}/${dst}`);
+  if(!res) return;
+
+  document.getElementById('results-ph').style.display='none';
+  document.getElementById('results-content').innerHTML=`<div class="result-box">
+    <h3>${res.connected?'Route Available':'No Route Available'}</h3>
+    <p style="font-size:11px;color:var(--teal);margin-bottom:10px;">Checked by C++ DFS algorithm</p>
+    <p style="font-size:13.5px;margin-top:8px;"><b>${res.from}</b> ${res.connected?'can reach':'cannot reach'} <b>${res.to}</b>${res.connected?'':' — path may be blocked'}.</p>
+    <div style="margin-top:14px;padding:14px;background:${res.connected?'#e8f5ee':'#fde8e8'};border-radius:8px;font-weight:700;font-size:14px;text-align:center;color:${res.connected?'var(--teal)':'var(--rose)'};">
+      ${res.connected?'Open Route Exists':'No Open Route'}
+    </div></div>`;
+  switchTab('results');
+  showToast(res.connected?'Route is open.':'No open route.',res.connected?'success':'error');
+}
+
+async function blockPath(){
+  const f=+document.getElementById('block-from').value;
+  const t=+document.getElementById('block-to').value;
+  showToast('Sending block request to C++ backend...','info');
+  const res = await api(`/block/${f}/${t}`, 'POST');
+  if(!res) return;
+  if(!res.ok){showToast('No direct path between these locations.','error');return;}
+  // update local edge display
+  const e=findEdge(f,t); if(e) e.blocked=true;
+  blockedPairs.push({from:f,to:t,fromName:res.from,toName:res.to});
+  renderBlockedList(); drawGraph();
+  showToast(`Closed in C++: ${res.from} to ${res.to}`,'error');
+}
+
+async function unblockPath(){
+  const f=+document.getElementById('block-from').value;
+  const t=+document.getElementById('block-to').value;
+  showToast('Sending unblock request to C++ backend...','info');
+  const res = await api(`/unblock/${f}/${t}`, 'POST');
+  if(!res) return;
+  if(!res.ok){showToast('No blocked path found between these locations.','error');return;}
+  const e=findEdge(f,t); if(e) e.blocked=false;
+  blockedPairs = blockedPairs.filter(p=>!(p.from===f&&p.to===t));
+  renderBlockedList(); drawGraph();
+  showToast(`Reopened in C++: ${res.from} to ${res.to}`,'success');
+}
+
+function renderBlockedList(){
+  const bl=EDGES.filter(e=>e.blocked);
+  const ph=document.getElementById('blocked-ph');
+  const ct=document.getElementById('blocked-list');
+  if(!bl.length){ph.style.display='flex';ct.innerHTML='';return;}
+  ph.style.display='none';
+  ct.innerHTML=`<p style="font-size:11px;color:var(--teal);margin-bottom:12px;">Managed in C++ graph — changes affect all route calculations</p>`
+  + bl.map(e=>`<div class="blocked-item">
+    <div class="blocked-dot"></div>
+    <div class="blocked-info">${locName(e.from)} to ${locName(e.to)}<div class="blocked-meta">${e.dist} m · ${e.time} min</div></div>
+    <button class="btn btn-sage btn-sm" onclick="unblockById(${e.from},${e.to})">Reopen</button>
+  </div>`).join('');
+}
+
+async function unblockById(f,t){
+  const res = await api(`/unblock/${f}/${t}`,'POST');
+  if(res&&res.ok){ const e=findEdge(f,t); if(e)e.blocked=false; renderBlockedList(); drawGraph(); showToast(`Reopened: ${locName(f)} to ${locName(t)}`,'success'); }
+}
+
+// ── LOCATION LIST
+function renderLocList(filter=''){
+  const fl=LOCATIONS.filter(l=>l.name.toLowerCase().includes(filter.toLowerCase())||l.type.toLowerCase().includes(filter.toLowerCase()));
+  document.getElementById('loc-list').innerHTML=
+    `<p style="font-size:11px;color:var(--teal);margin-bottom:12px;">Data loaded from C++ backend via campus_map.csv</p>`
+    + fl.map(l=>`<div class="loc-card">
+      <div class="loc-icon" style="background:${typeColor(l.type)}">${l.name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}</div>
+      <div class="loc-info">
+        <h4>${l.name}${l.emergency?'<span class="emerg-badge">Medical</span>':''}</h4>
+        <span class="type-tag">${l.type}</span>
+        <p>${l.desc}</p>
+      </div>
+    </div>`).join('');
+}
+function filterLocations(){renderLocList(document.getElementById('search-input').value);}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openEdgeModal(){
+  populateSelects();
+  document.getElementById('e-dist').value='';
+  document.getElementById('e-time').value='';
+  document.getElementById('e-bidir').checked=true;
+  document.getElementById('edge-modal').classList.add('open');
+}
+function saveEdge(){
+  const f=+document.getElementById('e-from').value,t=+document.getElementById('e-to').value;
+  const dist=parseInt(document.getElementById('e-dist').value)||0;
+  const time=parseInt(document.getElementById('e-time').value)||0;
+  if(f===t){showToast('Choose two different locations.','error');return;}
+  if(findEdge(f,t)){showToast('A path already exists between these locations.','error');return;}
+  EDGES.push({from:f,to:t,dist,time,blocked:false});
+  closeModal('edge-modal');drawGraph();
+  showToast(`Path added: ${locName(f)} to ${locName(t)}`,'success');
+}
+
+function populateSelects(){
+  ['sp-from','sp-to','trav-from','emerg-from','conn-from','conn-to','block-from','block-to','e-from','e-to'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML=LOCATIONS.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+    if(cur)sel.value=cur;
+  });
+}
+
+// ── CANVAS 
+const NODE_POS = {
+  1:{x:.50,y:.90},2:{x:.50,y:.70},3:{x:.28,y:.52},4:{x:.56,y:.48},
+  5:{x:.74,y:.54},6:{x:.85,y:.66},7:{x:.26,y:.34},8:{x:.50,y:.24},
+  9:{x:.22,y:.40},10:{x:.67,y:.86},11:{x:.72,y:.65},12:{x:.12,y:.62},
+  13:{x:.16,y:.76},14:{x:.36,y:.86},15:{x:.06,y:.48},16:{x:.06,y:.62},
+  17:{x:.38,y:.24},18:{x:.62,y:.32},19:{x:.46,y:.12},20:{x:.67,y:.93},
+};
+
+let canvas,ctx,W,H,scale=1,panX=0,panY=0,dragging=false,lastMouse=null;
+
+function initCanvas(){
+  canvas=document.getElementById('graphCanvas');
+  ctx=canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize',resizeCanvas);
+  canvas.addEventListener('mousedown',e=>{dragging=true;lastMouse={x:e.clientX,y:e.clientY};});
+  window.addEventListener('mouseup',()=>{dragging=false;});
+  canvas.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    panX+=e.clientX-lastMouse.x;panY+=e.clientY-lastMouse.y;
+    lastMouse={x:e.clientX,y:e.clientY};drawGraph();
+  });
+  canvas.addEventListener('wheel',e=>{
+    e.preventDefault();
+    scale*=e.deltaY<0?1.1:.91;
+    scale=Math.max(.3,Math.min(scale,3));
+    drawGraph();
+  },{passive:false});
+  // Touch support
+  let lastDist=0,lastTouch=null;
+  canvas.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){dragging=true;lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};}
+    if(e.touches.length===2){lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+  });
+  canvas.addEventListener('touchend',()=>{dragging=false;});
+  canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===1&&dragging&&lastTouch){
+      panX+=e.touches[0].clientX-lastTouch.x;panY+=e.touches[0].clientY-lastTouch.y;
+      lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};drawGraph();
+    }
+    if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      scale*=d/lastDist;scale=Math.max(.3,Math.min(scale,3));lastDist=d;drawGraph();
+    }
+  },{passive:false});
+  drawGraph();
+}
+
+function resizeCanvas(){
+  W=canvas.width=canvas.offsetWidth;
+  H=canvas.height=canvas.offsetHeight;
+  drawGraph();
+}
+
+function nodeXY(id){
+  const p=NODE_POS[id]||{x:.5,y:.5};
+  return{x:p.x*W*scale+panX, y:p.y*H*scale+panY};
+}
+
+function drawGraph(){
+  if(!ctx)return;
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle='rgba(200,175,140,0.15)';ctx.lineWidth=.5;
+  for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  const ps=new Set();
+  for(let i=0;i<highlightPath.length-1;i++){
+    ps.add(`${highlightPath[i]}-${highlightPath[i+1]}`);
+    ps.add(`${highlightPath[i+1]}-${highlightPath[i]}`);
+  }
+
+  const R=Math.max(16,16*Math.min(scale,1.4));
+  const lfs=Math.max(10,11*Math.min(scale,1.2));
+
+  // edges
+  const distFs=Math.max(9,10*Math.min(scale,1.1));
+  ctx.font=`500 ${distFs}px DM Sans`;
+  for(const e of EDGES){
+    const a=nodeXY(e.from),b=nodeXY(e.to);
+    const ip=ps.has(`${e.from}-${e.to}`);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+    if(e.blocked){ctx.strokeStyle='rgba(192,80,96,.55)';ctx.lineWidth=2;ctx.setLineDash([6,4]);}
+    else if(ip){ctx.strokeStyle=highlightType==='emergency'?'#c05060':'#d4761e';ctx.lineWidth=4.5;ctx.setLineDash([]);}
+    else{ctx.strokeStyle='rgba(180,150,110,.5)';ctx.lineWidth=1.8;ctx.setLineDash([]);}
+    ctx.stroke();ctx.setLineDash([]);
+
+    // distance label on every edge
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const lbl=`${e.dist}m`;
+    const tw=ctx.measureText(lbl).width;
+
+    // pill bg
+    ctx.fillStyle=ip
+      ? (highlightType==='emergency'?'rgba(192,80,96,.15)':'rgba(212,118,30,.18)')
+      : 'rgba(253,246,236,.88)';
+    ctx.strokeStyle=ip
+      ? (highlightType==='emergency'?'rgba(192,80,96,.5)':'rgba(212,118,30,.5)')
+      : 'rgba(200,175,140,.6)';
+    ctx.lineWidth=ip?1.2:.8;
+    ctx.beginPath();ctx.roundRect(mx-tw/2-4,my-distFs+1,tw+8,distFs+4,3);
+    ctx.fill();ctx.stroke();
+    // text
+    ctx.fillStyle=ip?(highlightType==='emergency'?'#900030':'#7a3e1a'):'#8a6a40';
+    ctx.textAlign='center';ctx.fillText(lbl,mx,my);ctx.textAlign='left';
+  }
+
+  // labels UNDER nodes
+  ctx.font=`600 ${lfs}px DM Sans`;
+  for(const l of LOCATIONS){
+    const{x,y}=nodeXY(l.id);
+    const ih=highlightPath.includes(l.id);
+    const words=l.name.split(' ');
+    const lines=[];let cur='';
+    for(const w of words){const t=(cur?cur+' ':'')+w;if(t.length<=11)cur=t;else{if(cur)lines.push(cur);cur=w;}}
+    if(cur)lines.push(cur);
+    const dl=lines.slice(0,2);
+    const lh=lfs+3,ly=y+R+9;
+    const mw=Math.max(...dl.map(ln=>ctx.measureText(ln).width));
+    ctx.fillStyle=ih?(highlightType==='emergency'?'rgba(192,80,96,.12)':'rgba(212,118,30,.12)'):'rgba(253,246,236,.93)';
+    ctx.strokeStyle=ih?(highlightType==='emergency'?'#c05060':'#d4761e'):'rgba(200,175,140,.55)';
+    ctx.lineWidth=ih?1.5:1;
+    ctx.beginPath();ctx.roundRect(x-mw/2-7,ly-lfs-1,mw+14,dl.length*lh+5,5);ctx.fill();
+    if(ih)ctx.stroke();
+    ctx.fillStyle=ih?(highlightType==='emergency'?'#900030':'#7a3e1a'):'#3d1f0a';
+    ctx.textAlign='center';
+    dl.forEach((ln,i)=>ctx.fillText(ln,x,ly+i*lh));
+    ctx.textAlign='left';
+  }
+
+  // nodes ON TOP
+  for(const l of LOCATIONS){
+    const{x,y}=nodeXY(l.id);
+    const ih=highlightPath.includes(l.id);
+    const col=typeColor(l.type);
+    ctx.shadowColor='rgba(61,31,10,.28)';ctx.shadowBlur=10;
+    if(ih){ctx.beginPath();ctx.arc(x,y,R+5,0,Math.PI*2);ctx.fillStyle=highlightType==='emergency'?'#c05060':'#d4761e';ctx.fill();}
+    ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);
+    ctx.fillStyle=ih?(highlightType==='emergency'?'#c05060':'#d4761e'):col;
+    ctx.fill();ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=2.5;ctx.stroke();
+    ctx.shadowBlur=0;
+    if(l.emergency){ctx.beginPath();ctx.arc(x,y,R+8,0,Math.PI*2);ctx.strokeStyle='rgba(192,80,96,.5)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);}
+    const initials=l.name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const ifs=Math.max(10,R*.55);
+    ctx.font=`700 ${ifs}px DM Sans`;ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,255,255,.97)';
+    ctx.fillText(initials,x,y+ifs*.36);ctx.textAlign='left';
+  }
+}
+
+// ── TABS 
+function switchTab(name){
+  const names=['results','locations','routes','walkthrough','blocked'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if(name==='locations')renderLocList();
+  if(name==='blocked')renderBlockedList();
+}
+
+// ── INIT 
+window.addEventListener('load',()=>{
+  setTimeout(initCanvas, 100);
+  loadData(); // ← fetches from C++ backend via server.py
+});
+document.getElementById('loc-modal').addEventListener('click',function(e){if(e.target===this)closeModal('loc-modal');});
+document.getElementById('edge-modal').addEventListener('click',function(e){if(e.target===this)closeModal('edge-modal');});
+</script>
+</body>
+</html>
